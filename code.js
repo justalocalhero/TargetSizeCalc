@@ -67,7 +67,7 @@ function populate(count)
     let head = {remaining: count, children:[], isHead:true}
     let currentNode = head;
 
-    while(currentNode.remaining > 124)
+    while(currentNode.remaining > 114)
     {
         let child = getNode(currentNode, currentNode.remaining - 42, 42);
         currentNode.children.push(child);
