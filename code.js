@@ -1,17 +1,31 @@
-var textElement = document.getElementById("inputArea")
-textElement.addEventListener("input", handleInput)
+var inchesElement = document.getElementById("inputArea")
+var feetElement = document.getElementById("feetInputArea")
+inchesElement.addEventListener("input", handleInput)
+feetElement.addEventListener("input", handleInput)
 var printArea = document.getElementById("printArea")
+var feetValue = 0;
+var inchesValue = 0;
 
 const sizes = [42, 32, 24, 18, 12]
 node = {}
 
 function handleInput()
 {
-    let value = textElement.value
-    if(isNaN(value)) return;
-    if(value < 12) return;
-    if(value > 200) return;
-    handleSolutions(value)
+    printArea.innerHTML = "";
+    let feet = feetElement.value;
+    let inches = inchesElement.value;
+    if(isNaN(feet)) feet = 0;
+    if(isNaN(inches)) inches = 0;
+    let feetConverted = Number(feet);
+    let inchesConverted = Number(inches);
+    if(feetConverted > 10000) return;
+    if(inchesConverted > 10000) return;
+    let totalValue = 12*feetConverted + inchesConverted;
+    if(isNaN(totalValue)) return;
+    if(totalValue < 12) return;
+    feetValue = feetConverted;
+    inchesValue = inchesConverted;
+    handleSolutions(totalValue)
 }
 
 function handleSolutions(value)
@@ -19,7 +33,12 @@ function handleSolutions(value)
     let output = findOptimal(value);
     printArea.innerHTML = "";
 
-    printArea.appendChild(document.createElement("div")).innerHTML = `Solutions with remainder of ${output.remainder} inches:`
+    let div = printArea.appendChild(document.createElement("div"));
+    div.innerHTML = `Solutions for `
+    if(feetValue > 0) div.innerHTML += `${feetValue} feet `
+    if(inchesValue > 0) div.innerHTML +=`${inchesValue} inches `
+    div.innerHTML += `with remainder of ${output.remainder} inches:`
+    
     printArea.appendChild(document.createElement("br"))
 
 
@@ -29,9 +48,8 @@ function handleSolutions(value)
         let line = printArea.appendChild(document.createElement("div"))
         for(value of solution)
         {
-            console.log(value)
-            if(!first)line.innerText += " + "
-            line.innerText += value + " in "
+            if(!first)line.innerText += ` +  `
+            line.innerText += `(${value.count} x ${value.value} in)`
             if(first) first = false
         }
         printArea.appendChild(document.createElement("br"))
@@ -47,8 +65,16 @@ function getNode(parent, remaining, value)
 function populate(count)
 {
     let head = {remaining: count, children:[], isHead:true}
+    let currentNode = head;
 
-    popRef(head)
+    while(currentNode.remaining > 124)
+    {
+        let child = getNode(currentNode, currentNode.remaining - 42, 42);
+        currentNode.children.push(child);
+        currentNode = child;
+    }
+
+    popRef(currentNode)
 
     return head
 }
@@ -100,10 +126,17 @@ function findOptimal(count)
         }
 
         solution.sort()
+        solution.reverse()
         if(!collectionContainsSimilar(solutions, solution)) solutions.push(solution)
     }
 
-    return {solutions: solutions, remainder: minRemaining}
+    let consolidatedSolutions = []
+    for(solution of solutions)
+    {
+        consolidatedSolutions.push(collapseArray(solution))
+    }
+
+    return {solutions: consolidatedSolutions, remainder: minRemaining}
 }
 
 function collectionContainsSimilar(collection, array)
@@ -125,6 +158,28 @@ function similarArrays(arr1, arr2)
         if(arr1[i] != arr2[i]) return false
     }
     return true
+}
+
+function collapseArray(arr)
+{
+    let solution = []
+
+    let currentNode = {value: -1, count: 0}
+
+    for (item of arr)
+    {
+        if(currentNode.value != item)
+        {
+            currentNode = {value: item, count: 1}
+            solution.push(currentNode)
+        }
+        else
+        {
+            currentNode.count++;
+        }
+    }
+
+    return solution;
 }
 
 function traverseToRoots(node, roots) {
