@@ -41,18 +41,20 @@ function handleSolutions(value)
     
     printArea.appendChild(document.createElement("br"))
 
+    let firstSolution = true;
 
     for(solution of output.solutions)
     {    
-        let first = true
+        let firstValue = true
+        if(!firstSolution) printArea.appendChild(document.createElement("br"))
+        if(firstSolution) firstSolution = false;
         let line = printArea.appendChild(document.createElement("div"))
         for(value of solution)
         {
-            if(!first)line.innerText += ` +  `
+            if(!firstValue)line.innerText += ` +  `
             line.innerText += `(${value.count} x ${value.value} in)`
-            if(first) first = false
+            if(firstValue) firstValue = false
         }
-        printArea.appendChild(document.createElement("br"))
     }
 
 }
